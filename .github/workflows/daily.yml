@@ -1,0 +1,64 @@
+name: Daily brief
+
+on:
+  schedule:
+    # 10:00 UTC = 6am New York (EDT) / 5am (EST). GitHub cron is always UTC and
+    # does not follow daylight saving, so the local time shifts by an hour in
+    # November. Adjust if that bothers you.
+    - cron: "0 10 * * 1-5"
+  workflow_dispatch:        # lets you click "Run workflow" manually any time
+
+permissions:
+  contents: write           # to commit the daily archive back to the repo
+  pages: write              # to publish
+  id-token: write
+
+concurrency:
+  group: daily-brief
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Build the brief
+        env:
+          # Set LLM_PROVIDER as a repo *variable* (Settings -> Variables), and
+          # only the matching key as a *secret*. Unset keys are simply ignored.
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER || 'groq' }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          NEWSDESK_HOME_REGIONS: ${{ vars.NEWSDESK_HOME_REGIONS || 'India,US' }}
+          MAX_ARTICLES_TO_SCORE: "140"
+        run: python -m src.build
+
+      - name: Archive today's data
+        run: |
+          git config user.name  "newsdesk-bot"
+          git config user.email "actions@github.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "brief $(date -u +%Y-%m-%d)"
+          git push
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
