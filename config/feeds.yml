@@ -1,0 +1,185 @@
+# ---------------------------------------------------------------------------
+# RSS SOURCES
+#
+# Only headline + short summary (the "dek") is pulled. Full article text stays
+# on the publisher's site and we always link out. That keeps this on the right
+# side of paywalls and copyright -- do NOT change it to scrape article bodies
+# from WSJ/FT/Bloomberg.
+#
+# tier: source priority used to pick the "winner" when two outlets cover the
+#       same story (1 = most authoritative, wins ties).
+# hint: nudges the scorer's category. It can override if the story disagrees.
+#
+# Feed URLs rot. Run  `python -m src.verify_feeds`  to see which ones are alive.
+# ---------------------------------------------------------------------------
+
+feeds:
+  # --- Primary sources: central banks & statistical agencies -----------------
+  # These are the highest-signal feeds in the whole file. A CPI print or an FOMC
+  # statement shows up here before any journalist writes about it.
+  - name: Federal Reserve (all press)
+    url: https://www.federalreserve.gov/feeds/press_all.xml
+    tier: 1
+    hint: Monetary Policy
+  - name: Federal Reserve (monetary policy)
+    url: https://www.federalreserve.gov/feeds/press_monetary.xml
+    tier: 1
+    hint: Monetary Policy
+  - name: ECB press
+    url: https://www.ecb.europa.eu/rss/press.html
+    tier: 1
+    hint: Monetary Policy
+  - name: Bank of England
+    url: https://www.bankofengland.co.uk/rss/news
+    tier: 1
+    hint: Monetary Policy
+  - name: BLS latest releases
+    url: https://www.bls.gov/feed/bls_latest.rss
+    tier: 1
+    hint: Macroeconomics
+  - name: BEA news
+    url: https://apps.bea.gov/rss/rss.xml
+    tier: 1
+    hint: Macroeconomics
+  # Treasury and the IMF no longer publish a working public RSS feed (checked
+  # Aug 2026 -- Treasury's /rss/press.xml is gone, the IMF's rss-list endpoint
+  # 404s). Their material still reaches you via WSJ, FT and Reuters syndication.
+
+  # --- Financial press ------------------------------------------------------
+  - name: WSJ Markets
+    url: https://feeds.a.dj.com/rss/RSSMarketsMain.xml
+    tier: 2
+    hint: Financial Markets
+  - name: WSJ World News
+    url: https://feeds.a.dj.com/rss/RSSWorldNews.xml
+    tier: 2
+    hint: Geopolitics & Trade
+  - name: Financial Times
+    url: https://www.ft.com/rss/home
+    tier: 2
+    hint: Financial Markets
+  - name: CNBC Top News
+    url: https://www.cnbc.com/id/100003114/device/rss/rss.html
+    tier: 3
+    hint: Financial Markets
+  - name: CNBC Economy
+    url: https://www.cnbc.com/id/20910258/device/rss/rss.html
+    tier: 3
+    hint: Macroeconomics
+  - name: CNBC Finance
+    url: https://www.cnbc.com/id/10000664/device/rss/rss.html
+    tier: 3
+    hint: Financial Markets
+  - name: MarketWatch Top Stories
+    url: https://feeds.content.dowjones.io/public/rss/mw_topstories
+    tier: 3
+    hint: Financial Markets
+  - name: Yahoo Finance
+    url: https://finance.yahoo.com/news/rssindex
+    tier: 4
+    hint: Financial Markets
+  - name: NYT Business
+    url: https://rss.nytimes.com/services/xml/rss/nyt/Business.xml
+    tier: 3
+    hint: Corporate Releases
+  - name: NYT Economy
+    url: https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml
+    tier: 3
+    hint: Macroeconomics
+  - name: Guardian Business
+    url: https://www.theguardian.com/uk/business/rss
+    tier: 4
+    hint: Financial Markets
+
+  # --- World / geopolitics --------------------------------------------------
+  - name: BBC Business
+    url: https://feeds.bbci.co.uk/news/business/rss.xml
+    tier: 3
+    hint: Financial Markets
+  - name: BBC World
+    url: https://feeds.bbci.co.uk/news/world/rss.xml
+    tier: 3
+    hint: Geopolitics & Trade
+  - name: Al Jazeera
+    url: https://www.aljazeera.com/xml/rss/all.xml
+    tier: 4
+    hint: Geopolitics & Trade
+
+
+  # --- INDIA: primary sources ----------------------------------------------
+  # RBI and PIB are to India what the Fed and BLS are to the US -- the repo rate
+  # decision, the WPI/CPI print and the Budget all land here first.
+  - name: RBI press releases
+    url: https://www.rbi.org.in/pressreleases_rss.xml
+    tier: 1
+    hint: Monetary Policy
+  - name: RBI notifications
+    url: https://www.rbi.org.in/notifications_rss.xml
+    tier: 1
+    hint: Monetary Policy
+  - name: PIB Finance Ministry
+    url: https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3
+    tier: 1
+    hint: Macroeconomics
+
+  # --- INDIA: financial press ----------------------------------------------
+  - name: Economic Times Markets
+    url: https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms
+    tier: 2
+    hint: Financial Markets
+  - name: Economic Times Economy
+    url: https://economictimes.indiatimes.com/news/economy/rssfeeds/1373380680.cms
+    tier: 2
+    hint: Macroeconomics
+  - name: Business Standard Markets
+    url: https://www.business-standard.com/rss/markets-106.rss
+    tier: 2
+    hint: Financial Markets
+  - name: Business Standard Economy
+    url: https://www.business-standard.com/rss/economy-policy-102.rss
+    tier: 2
+    hint: Macroeconomics
+  - name: Mint Markets
+    url: https://www.livemint.com/rss/markets
+    tier: 2
+    hint: Financial Markets
+  - name: Mint Economy
+    url: https://www.livemint.com/rss/economy
+    tier: 2
+    hint: Macroeconomics
+  - name: Moneycontrol Business
+    url: https://www.moneycontrol.com/rss/business.xml
+    tier: 3
+    hint: Financial Markets
+  - name: Moneycontrol Economy
+    url: https://www.moneycontrol.com/rss/economy.xml
+    tier: 3
+    hint: Macroeconomics
+  - name: Hindu BusinessLine Economy
+    url: https://www.thehindubusinessline.com/economy/feeder/default.rss
+    tier: 3
+    hint: Macroeconomics
+
+  # --- Asia ex-India --------------------------------------------------------
+  - name: Nikkei Asia
+    url: https://asia.nikkei.com/rss/feed/nar
+    tier: 3
+    hint: Geopolitics & Trade
+  - name: South China Morning Post Economy
+    url: https://www.scmp.com/rss/92/feed
+    tier: 3
+    hint: Macroeconomics
+
+  # --- Technology (your second interest area) -------------------------------
+  - name: Ars Technica
+    url: https://feeds.arstechnica.com/arstechnica/technology-lab
+    tier: 4
+    hint: Technology
+  - name: The Verge
+    url: https://www.theverge.com/rss/index.xml
+    tier: 4
+    hint: Technology
+
+# Reuters and Bloomberg retired their public RSS feeds. Their stories still
+# reach you second-hand through the outlets above. Paid alternatives if you
+# ever want them: Marketaux, NewsAPI.ai, or Benzinga.

@@ -1,0 +1,78 @@
+# ---------------------------------------------------------------------------
+# MARKET DATA
+# Two free, no-key sources:
+#   stooq.com  -> indices, FX, futures (daily OHLC CSV, no registration)
+#   FRED       -> Treasury yields and macro series (CSV works without a key)
+# Both are end-of-day, not live. For a morning-prep dashboard that is fine:
+# you want yesterday's close and the overnight context, not a live tape.
+# ---------------------------------------------------------------------------
+
+# The horizontal strip across the top of the dashboard.
+ticker_bar:
+  - {label: "S&P 500",   stooq: "^spx",  fmt: "num"}
+  - {label: "Nasdaq",    stooq: "^ndq",  fmt: "num"}
+  - {label: "STOXX 600", stooq: "^sxxp", fmt: "num"}
+  - {label: "Nikkei",    stooq: "^nkx",  fmt: "num"}
+  - {label: "Nifty 50",  stooq: "^nse",  fmt: "num"}
+  - {label: "Sensex",    stooq: "^snx",  fmt: "num"}
+  - {label: "Hang Seng", stooq: "^hsi",  fmt: "num"}
+  - {label: "VIX",       stooq: "^vix",  fmt: "num2"}
+  - {label: "Dollar Idx",stooq: "dx.f",  fmt: "num2"}
+  - {label: "EUR/USD",   stooq: "eurusd",fmt: "fx"}
+  - {label: "USD/JPY",   stooq: "usdjpy",fmt: "num2"}
+  - {label: "USD/INR",   stooq: "usdinr",fmt: "num2"}
+  - {label: "Brent",     stooq: "cb.f",  fmt: "num2"}
+  - {label: "Gold",      stooq: "gc.f",  fmt: "num"}
+  - {label: "Copper",    stooq: "hg.f",  fmt: "fx"}
+  - {label: "US 10Y",    fred: "DGS10",  fmt: "pct"}
+  - {label: "US 2Y",     fred: "DGS2",   fmt: "pct"}
+
+# Sovereign yield curve panel at the bottom.
+# Only the US is available from FRED broken out by tenor. India publishes its
+# G-sec curve through CCIL/RBI, which has no free JSON API -- the India 10Y is
+# picked up in the macro scorecard instead, and RBI's own releases come through
+# the news feed.
+yield_curves:
+  United States:
+    "3M": DGS3MO
+    "2Y": DGS2
+    "5Y": DGS5
+    "10Y": DGS10
+    "30Y": DGS30
+
+# Macro scorecard grid. Each cell is the latest value of a FRED series.
+macro_scorecard:
+  - {country: "United States", metric: "CPI YoY %",       fred: "CPIAUCSL", transform: "yoy"}
+  - {country: "United States", metric: "Core PCE YoY %",  fred: "PCEPILFE", transform: "yoy"}
+  - {country: "United States", metric: "Unemployment %",  fred: "UNRATE",   transform: "level"}
+  - {country: "United States", metric: "Fed Funds %",     fred: "DFF",      transform: "level"}
+  - {country: "United States", metric: "Real GDP QoQ %",  fred: "A191RL1Q225SBEA", transform: "level"}
+  - {country: "Euro Area",     metric: "HICP YoY %",      fred: "CP0000EZ19M086NEST", transform: "yoy"}
+  - {country: "Euro Area",     metric: "Unemployment %",  fred: "LRHUTTTTEZM156S", transform: "level"}
+  - {country: "United Kingdom",metric: "CPI YoY %",       fred: "GBRCPIALLMINMEI", transform: "yoy"}
+  - {country: "Japan",         metric: "CPI YoY %",       fred: "JPNCPIALLMINMEI", transform: "yoy"}
+  - {country: "China",         metric: "CPI YoY %",       fred: "CHNCPIALLMINMEI", transform: "yoy"}
+
+  # --- India ---------------------------------------------------------------
+  # DEXINUS and IRLTLT01INM156N are the two most reliable India series on FRED.
+  # The OECD-sourced ones (INDCPI*, INDPRO*) are more fragile -- FRED retired a
+  # batch of OECD MEI series, so run `python -m src.verify_data` after any edit
+  # and drop whatever comes back dead.
+  - {country: "India", metric: "USD/INR",          fred: "DEXINUS",          transform: "level"}
+  - {country: "India", metric: "10Y G-sec %",      fred: "IRLTLT01INM156N",  transform: "level"}
+  - {country: "India", metric: "CPI YoY %",        fred: "INDCPIALLMINMEI",  transform: "yoy"}
+  - {country: "India", metric: "Ind. Production",  fred: "INDPROINDQISMEI",  transform: "yoy"}
+  - {country: "India", metric: "Real GDP YoY %",   fred: "NYGDPMKTPKDZGIND", transform: "level"}
+  - {country: "India", metric: "CPI Infl. (ann) %",fred: "FPCPITOTLZGIND",   transform: "level"}
+
+# FRED "release IDs" watched for the economic calendar (needs FRED_API_KEY).
+watched_releases:
+  10:  CPI
+  50:  Employment Situation
+  53:  GDP
+  21:  PPI
+  54:  Personal Income & Outlays
+  16:  Retail Sales
+  46:  FOMC Press Release
+  175: Job Openings (JOLTS)
+  9:   Industrial Production

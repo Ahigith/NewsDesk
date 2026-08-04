@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Desk — Daily Market &amp; Macro Brief</title>
+<style>
+  :root{
+    --bg:#0a0d13; --panel:#11151f; --panel2:#161b28; --line:#232b3d;
+    --txt:#e6ebf5; --dim:#8b97ad; --faint:#5b6579;
+    --up:#26d07c; --down:#ff5c5c; --flat:#8b97ad;
+    --t1:#ffb020; --t2:#5b9dff; --t3:#5b6579;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1440px;margin:0 auto;padding:0 20px 60px}
+
+  /* ---------- ticker ---------- */
+  .ticker{background:var(--panel);border-bottom:1px solid var(--line);
+    overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+  .ticker::-webkit-scrollbar{display:none}
+  .ticker-inner{display:flex;gap:0;min-width:min-content}
+  .tk{padding:9px 16px;border-right:1px solid var(--line);display:flex;
+    align-items:baseline;gap:8px;flex:0 0 auto}
+  .tk-l{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+  .tk-v{font-family:var(--mono);font-size:14px;font-weight:600}
+  .tk-c{font-family:var(--mono);font-size:11px;font-weight:600}
+  .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--flat)}
+
+  /* ---------- header ---------- */
+  header{padding:26px 0 20px;border-bottom:1px solid var(--line);margin-bottom:24px;
+    display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+  h1{font-size:26px;letter-spacing:-.02em;font-weight:700}
+  h1 span{color:var(--t1)}
+  .sub{color:var(--dim);font-size:13px;margin-top:5px}
+  .meta{text-align:right;font-size:12px;color:var(--dim);font-family:var(--mono)}
+  .meta b{color:var(--t1)}
+
+  /* ---------- hero ---------- */
+  .sect{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+    margin:0 0 12px;display:flex;align-items:center;gap:10px}
+  .sect:after{content:"";flex:1;height:1px;background:var(--line)}
+  .hero{display:grid;gap:10px;margin-bottom:32px}
+  .hero-item{background:linear-gradient(180deg,var(--panel2),var(--panel));
+    border:1px solid var(--line);border-left:3px solid var(--t1);border-radius:6px;
+    padding:14px 16px;display:flex;gap:14px;align-items:flex-start;transition:.15s}
+  .hero-item:hover{border-color:#33405c;transform:translateX(2px)}
+  .rank{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--t1);
+    opacity:.5;line-height:1;min-width:26px}
+  .hero-t{font-size:16px;font-weight:650;line-height:1.35;margin-bottom:5px}
+  .hero-k{color:var(--dim);font-size:13.5px}
+
+  /* ---------- layout ---------- */
+  .cols{display:grid;grid-template-columns:1fr 340px;gap:22px;align-items:start}
+  @media(max-width:1000px){.cols{grid-template-columns:1fr}}
+
+  /* ---------- filters ---------- */
+  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{background:var(--panel);border:1px solid var(--line);color:var(--dim);
+    padding:5px 11px;border-radius:20px;font-size:12px;cursor:pointer;transition:.12s;
+    font-family:inherit}
+  .chip:hover{color:var(--txt);border-color:#33405c}
+  .chip.on{background:var(--t1);border-color:var(--t1);color:#0a0d13;font-weight:600}
+
+  /* ---------- feed ---------- */
+  .story{border-bottom:1px solid var(--line);padding:13px 0;display:flex;gap:12px}
+  .score{font-family:var(--mono);font-size:15px;font-weight:700;min-width:34px;
+    text-align:right;padding-top:1px}
+  .tier1 .score{color:var(--t1)} .tier2 .score{color:var(--t2)} .tier3 .score{color:var(--t3)}
+  .body{flex:1;min-width:0}
+  .title{font-size:14.5px;font-weight:600;line-height:1.4;margin-bottom:4px}
+  .story:hover .title{color:var(--t1)}
+  .take{color:var(--dim);font-size:13px;margin-bottom:7px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:10.5px}
+  .tag{border:1px solid var(--line);border-radius:3px;padding:2px 6px;color:var(--faint);
+    letter-spacing:.04em;text-transform:uppercase}
+  .tag.cat{color:var(--t2);border-color:#25406b}
+  .tag.rgn{color:#9d8bff;border-color:#372f5e}
+  .tag.rgn.home{color:#2ad3a8;border-color:#12503f;background:#0e2b24}
+  .tag.bull{color:var(--up);border-color:#15452f}
+  .tag.bear{color:var(--down);border-color:#5a2222}
+  .src{color:var(--faint);font-family:var(--mono)}
+
+  /* ---------- side panels ---------- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    padding:14px 15px;margin-bottom:16px}
+  .card h3{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);
+    margin-bottom:11px;font-weight:600}
+  .cal{display:flex;justify-content:space-between;gap:10px;padding:7px 0;
+    border-bottom:1px solid var(--line);font-size:12.5px}
+  .cal:last-child{border:0}
+  .cal-d{font-family:var(--mono);color:var(--t1);font-size:11px;flex:0 0 auto}
+  .cal-n{flex:1;min-width:0}
+  .cal-x{color:var(--faint);font-size:11px;font-family:var(--mono)}
+  .empty{color:var(--faint);font-size:12px;font-style:italic}
+
+  /* ---------- bottom ---------- */
+  .bottom{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:34px}
+  @media(max-width:1000px){.bottom{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;color:var(--dim);font-weight:600;font-size:10px;
+    letter-spacing:.09em;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:6px 8px;border-bottom:1px solid #1a2030}
+  td.n{font-family:var(--mono);text-align:right}
+  footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);
+    color:var(--faint);font-size:11.5px;line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="ticker"><div class="ticker-inner">
+{% for t in ticker %}
+  <div class="tk">
+    <span class="tk-l">{{ t.label }}</span>
+    <span class="tk-v">{{ t.value }}</span>
+    <span class="tk-c {{ t.direction }}">{{ t.change }}</span>
+  </div>
+{% else %}
+  <div class="tk"><span class="tk-l">market data unavailable this run</span></div>
+{% endfor %}
+</div></div>
+
+<div class="wrap">
+<header>
+  <div>
+    <h1>The <span>Desk</span></h1>
+    <div class="sub">{{ generated_human }}</div>
+  </div>
+  <div class="meta">
+    {{ stats.scored }} stories · {{ stats.tier1 }} tier-1 · {{ stats.india }} India · {{ stats.sources }} sources<br>
+    {% if next_release %}next: <b>{{ next_release.name }}</b> — {{ next_release.date }}{% endif %}
+  </div>
+</header>
+
+<div class="sect">Executive Briefing</div>
+<div class="hero">
+{% for s in hero %}
+  <a class="hero-item" href="{{ s.url }}" target="_blank" rel="noopener">
+    <div class="rank">{{ loop.index }}</div>
+    <div>
+      <div class="hero-t">{{ s.title }}</div>
+      <div class="hero-k">{{ s.takeaway }}</div>
+      <div class="tags" style="margin-top:8px">
+        <span class="tag cat">{{ s.category }}</span>
+        <span class="tag rgn{{ ' home' if s.home_boost }}">{{ s.region }}</span>
+        {% for a in s.asset_classes %}<span class="tag">{{ a }}</span>{% endfor %}
+        <span class="tag {{ 'bull' if s.sentiment=='Bullish' else ('bear' if s.sentiment=='Bearish' else '') }}">{{ s.sentiment }}</span>
+        <span class="src">{{ s.source }}{% if s.coverage_count > 1 %} +{{ s.coverage_count - 1 }} outlets{% endif %}</span>
+      </div>
+    </div>
+  </a>
+{% endfor %}
+</div>
+
+<div class="cols">
+  <div>
+    <div class="sect">News Feed</div>
+    <div class="filters" id="cats">
+      <button class="chip on" data-cat="all">All</button>
+      {% for c in categories %}<button class="chip" data-cat="{{ c }}">{{ c }}</button>{% endfor %}
+    </div>
+    <div class="filters" id="regions">
+      <button class="chip on" data-region="all">Everywhere</button>
+      {% for r in regions %}<button class="chip" data-region="{{ r }}">{{ r }}</button>{% endfor %}
+    </div>
+    <div class="filters" id="tiers">
+      <button class="chip on" data-tier="0">All tiers</button>
+      <button class="chip" data-tier="1">Tier 1 only</button>
+      <button class="chip" data-tier="2">Tier 1 + 2</button>
+    </div>
+    <div id="feed">
+    {% for s in stories %}
+      <div class="story tier{{ s.tier }}" data-cat="{{ s.category }}" data-tier="{{ s.tier }}" data-region="{{ s.region }}">
+        <div class="score">{{ s.importance }}</div>
+        <div class="body">
+          <a href="{{ s.url }}" target="_blank" rel="noopener"><div class="title">{{ s.title }}</div></a>
+          <div class="take">{{ s.takeaway }}</div>
+          <div class="tags">
+            <span class="tag cat">{{ s.category }}</span>
+            <span class="tag rgn{{ ' home' if s.home_boost }}">{{ s.region }}</span>
+            {% for a in s.asset_classes %}<span class="tag">{{ a }}</span>{% endfor %}
+            {% for e in s.key_entities %}<span class="tag">{{ e }}</span>{% endfor %}
+            <span class="src">{{ s.source }}{% if s.coverage_count > 1 %} · +{{ s.coverage_count - 1 }}{% endif %}</span>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+    <div id="none" class="empty" style="display:none;padding:20px 0">No stories match that filter.</div>
+  </div>
+
+  <aside>
+    <div class="card">
+      <h3>Economic Calendar</h3>
+      {% for e in economic_calendar[:12] %}
+        <div class="cal"><span class="cal-d">{{ e.date[5:] }}</span><span class="cal-n">{{ e.name }}</span></div>
+      {% else %}
+        <div class="empty">Add a free FRED_API_KEY to populate this.</div>
+      {% endfor %}
+    </div>
+    <div class="card">
+      <h3>Earnings This Week</h3>
+      {% for e in earnings_calendar[:14] %}
+        <div class="cal"><span class="cal-d">{{ e.date[5:] }}</span><span class="cal-n">{{ e.name }}</span><span class="cal-x">{{ e.detail }}</span></div>
+      {% else %}
+        <div class="empty">No large-cap earnings found.</div>
+      {% endfor %}
+    </div>
+  </aside>
+</div>
+
+<div class="bottom">
+  <div class="card">
+    <h3>Sovereign Yield Curves</h3>
+    <div id="curve"></div>
+    {% if not yield_curves %}<div class="empty">Curve data unavailable this run.</div>{% endif %}
+  </div>
+  <div class="card">
+    <h3>Macro Scorecard</h3>
+    {% if macro %}
+    <table>
+      <tr><th>Economy</th><th>Metric</th><th style="text-align:right">Latest</th><th style="text-align:right">Prior</th><th style="text-align:right">As of</th></tr>
+      {% for m in macro %}
+      <tr>
+        <td>{{ m.country }}</td><td style="color:var(--dim)">{{ m.metric }}</td>
+        <td class="n {{ m.direction }}">{{ m.value }}</td>
+        <td class="n" style="color:var(--faint)">{{ m.prior }}</td>
+        <td class="n" style="color:var(--faint);font-size:11px">{{ m.as_of }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}<div class="empty">Macro data unavailable this run.</div>{% endif %}
+  </div>
+</div>
+
+<footer>
+  Built {{ generated_at }} · {{ stats.raw }} headlines ingested, {{ stats.deduped }} distinct after clustering.<br>
+  Headlines and links belong to their publishers; click through to read. Importance =
+  0.35·entity + 0.35·scope + 0.30·surprise, scored by an LLM, plus a home-region
+  relevance boost (green region badge) for stories in your watched regions.
+  Not investment advice — the ranking is a triage aid, not a signal.
+</footer>
+</div>
+
+<script id="curvedata" type="application/json">{{ yield_curves|tojson }}</script>
+<script>
+(function(){
+  // ---- filters ----
+  var cat='all', tier=0, region='all';
+  function apply(){
+    var shown=0;
+    document.querySelectorAll('.story').forEach(function(el){
+      var ok=(cat==='all'||el.dataset.cat===cat)
+            &&(region==='all'||el.dataset.region===region)
+            &&(tier===0||+el.dataset.tier<=tier);
+      el.style.display=ok?'flex':'none'; if(ok) shown++;
+    });
+    document.getElementById('none').style.display=shown?'none':'block';
+  }
+  function wire(id,fn){
+    document.getElementById(id).addEventListener('click',function(e){
+      var b=e.target.closest('.chip'); if(!b) return;
+      this.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on')});
+      b.classList.add('on'); fn(b); apply();
+    });
+  }
+  wire('cats',function(b){cat=b.dataset.cat});
+  wire('regions',function(b){region=b.dataset.region});
+  wire('tiers',function(b){tier=+b.dataset.tier});
+
+  // ---- yield curve (hand-rolled SVG, no chart library) ----
+  var data=JSON.parse(document.getElementById('curvedata').textContent||'{}');
+  var host=document.getElementById('curve');
+  var names=Object.keys(data); if(!names.length) return;
+  var W=460,H=200,P={t:14,r:14,b:26,l:38};
+  var all=[]; names.forEach(function(n){data[n].forEach(function(p){all.push(p.yield,p.month_ago)})});
+  var lo=Math.min.apply(null,all), hi=Math.max.apply(null,all), pad=(hi-lo)*0.15||0.2;
+  lo-=pad; hi+=pad;
+  var pts=data[names[0]].length;
+  function X(i){return P.l+i*(W-P.l-P.r)/Math.max(1,pts-1)}
+  function Y(v){return P.t+(hi-v)*(H-P.t-P.b)/(hi-lo)}
+  function path(key){return data[names[0]].map(function(p,i){return (i?'L':'M')+X(i)+' '+Y(p[key])}).join(' ')}
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">';
+  [0,.25,.5,.75,1].forEach(function(f){
+    var v=lo+(hi-lo)*f, y=Y(v);
+    svg+='<line x1="'+P.l+'" y1="'+y+'" x2="'+(W-P.r)+'" y2="'+y+'" stroke="#1a2030"/>'
+       +'<text x="4" y="'+(y+3)+'" fill="#5b6579" font-size="9" font-family="monospace">'+v.toFixed(2)+'</text>';
+  });
+  svg+='<path d="'+path('month_ago')+'" fill="none" stroke="#5b6579" stroke-width="1.4" stroke-dasharray="3 3"/>';
+  svg+='<path d="'+path('yield')+'" fill="none" stroke="#ffb020" stroke-width="2"/>';
+  data[names[0]].forEach(function(p,i){
+    svg+='<circle cx="'+X(i)+'" cy="'+Y(p.yield)+'" r="3" fill="#ffb020"/>'
+       +'<text x="'+X(i)+'" y="'+(H-8)+'" fill="#8b97ad" font-size="10" text-anchor="middle" font-family="monospace">'+p.tenor+'</text>';
+  });
+  svg+='</svg>';
+  host.innerHTML=svg+'<div style="font-size:11px;color:#5b6579;margin-top:6px">'
+    +names[0]+' — <span style="color:#ffb020">today</span> vs <span>~1 month ago (dashed)</span></div>';
+})();
+</script>
+</body>
+</html>
